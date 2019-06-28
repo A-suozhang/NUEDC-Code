@@ -1,3 +1,4 @@
+
 int i = 0;
 
 void setup(){
@@ -9,8 +10,8 @@ void loop(){
     Serial.println(i);
     i++;
     digitalWrite(25,HIGH);
-    delay(200);
+    delay(500);
     digitalWrite(25,LOW);
-    delay(200);
+    delay(500);
 
 }
