@@ -55,6 +55,7 @@ always @(posedge clk_in) begin
             end
 
             case(tx_cnt) 
+            // SERIAL - NEG
             4'd0: tx_serial_data <= 0; // Start Bit
             4'd1: tx_serial_data <= tx_data_in[0];
             4'd2: tx_serial_data <= tx_data_in[1];

@@ -1,7 +1,8 @@
-module uart_with_fifo_tx(clk_in,rst,wr_en,din,full,almost_full,tx_serial_data);
+module uart_with_fifo_tx(clk_in,rst,tx_en,wr_en,din,full,almost_full,tx_serial_data);
 
 input wire clk_in;
 input wire rst;
+input wire tx_en;
 input wire wr_en;
 input wire[7:0] din;
 output wire full;
@@ -19,7 +20,7 @@ reg read_from_empty_fifo;
 
 // reg [7:0] wait_time;  Instead Of Waiting, Simplying Detecting FIFO ~EMPTY is Easier And Safer
 
-assign tx_data_in = dout + 1;
+assign tx_data_in = dout;
 
 always@(posedge clk_in) begin
     if (rst) begin
@@ -90,12 +91,6 @@ uart_tx uart_tx0(
     .tx_data_in(tx_data_in),
     .tx_finish(tx_finish),
     .tx_serial_data(tx_serial_data)
-);
-
-baud_gen baud_gen0(
-    .clk_in(clk_in),
-    .tx_en(tx_en),
-    .rx_en(rx_en)
 );
 
 

@@ -1,4 +1,4 @@
-module uart_with_fifo_rx(clk_in,rst,rx_serial_data,rd_en,dout,almost_empty,empty);
+module uart_with_fifo_rx(clk_in,rx_en,rst,rx_serial_data,rd_en,dout,almost_empty,empty);
 // Acquiring Data From UART_RX
 // Then Decode It Into Data
 // Feed Into FIFO
@@ -7,6 +7,7 @@ module uart_with_fifo_rx(clk_in,rst,rx_serial_data,rd_en,dout,almost_empty,empty
 
 
 input wire clk_in;
+input wire rx_en;
 input wire rst;
 input wire rd_en;
 input wire rx_serial_data;
@@ -54,6 +55,7 @@ fifo_generator_0 fifo0 (
 //  ---The Intsantance Of UART_RX
 wire[7:0] rx_data;
 wire rx_finish;
+
 uart_rx uart_rx0(
     .clk_in(clk_in),
     .rx_en(rx_en),
@@ -63,12 +65,6 @@ uart_rx uart_rx0(
     .rx_data(rx_data)
 );
 
-// --- The Instance Baud_gen
-baud_gen baud_gen0(
-    .clk_in(clk_in),
-    .tx_en(tx_en),
-    .rx_en(rx_en)
-);
 
 
 endmodule 
