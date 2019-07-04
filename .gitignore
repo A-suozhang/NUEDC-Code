@@ -1,4 +1,4 @@
 *.log
 *.temp
-* .pdf
+*.pdf
 ESP32/build/
