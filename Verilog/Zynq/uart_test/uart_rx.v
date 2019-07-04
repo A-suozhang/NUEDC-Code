@@ -52,7 +52,7 @@ always @(posedge clk_in) begin
                 if (rx_sync == 0) begin // Testing The RX Serial 0 (probably START BIT) 
                     sample_cnt <= sample_cnt + 1;
 
-                    if (sample_cnt == 4'd15) begin   // More Than The Cycle Is 0
+                    if (sample_cnt == 4'd7) begin   // More Than Half The Cycle Is 0
                         state <= READ;      // Enter Read-State
                     end 
                 end

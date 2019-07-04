@@ -20,7 +20,7 @@ end
 
 initial begin
   rst = 1;
-  #20
+  #200
   rst = 0;
 end
 
@@ -33,6 +33,7 @@ uart_tx uart_tx0(
     .rst(rst),
     .tx_data_en(tx_data_en),
     .tx_data_in(tx_data_in),
+    .tx_idle(tx_idle),
     .tx_finish(tx_finish),
     .tx_serial_data(tx_serial_data)
 );

@@ -14,6 +14,7 @@ parameter IDLE = 1'b0;
 parameter SEND = 1'b1;
 
 reg state;
+
 reg[3:0] tx_cnt;    // TX Data Counter
 reg tx_finish_r;
 
@@ -30,7 +31,7 @@ always @(posedge clk_in) begin
       case(state)
         IDLE: begin
           tx_serial_data <= 1'b1;
-          tx_finish_r <= 1'b0;
+          tx_finish_r <= 1'b1;
 
           if (tx_data_en) begin
             state <= SEND;
@@ -41,6 +42,7 @@ always @(posedge clk_in) begin
 
         end
         SEND: begin
+          tx_finish_r <= 0;
           if (tx_en == 1) begin
 
             if (tx_cnt < 4'd9) begin
@@ -49,7 +51,7 @@ always @(posedge clk_in) begin
             else begin
               tx_cnt <= 0;
               state <= IDLE;
-              tx_finish_r <= 1;
+              // tx_finish_r <= 1;
             end
 
             case(tx_cnt) 
