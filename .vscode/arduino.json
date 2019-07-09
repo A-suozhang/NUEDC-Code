@@ -1,8 +1,8 @@
 {
-    "board": "esp32:esp32:esp32",
-    "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none",
-    "programmer": "ArduinoISP",
-    "sketch": "ESP32\\ESP32_Test\\esp32_test.ino",
-    "port": "COM3",
-    "output": "../ArduinoOutput"
+    "board": "arduino:avr:mega",
+    "programmer": "AVR ISP",
+    "sketch": "Arduino\\AD9854\\AD9843_test.ino",
+    "port": "COM15",
+    "output": "../ArduinoOutput",
+    "configuration": "cpu=atmega2560"
 }
