@@ -57,7 +57,7 @@ class DMASPI{
         spi_bus_add_device(spih,&spidevconf,&spidevhandle);
         spi_device_interface_config_t spislowdevconf;
         spislowdevconf.command_bits=0;
-        spislowdevconf.address_bits=0;
+        spislowdevconf.address_bits=0;`
         spislowdevconf.dummy_bits=0;
         spislowdevconf.mode=mode_;
         spislowdevconf.duty_cycle_pos=128;
@@ -66,7 +66,7 @@ class DMASPI{
         spislowdevconf.clock_speed_hz=2000000;
         spislowdevconf.spics_io_num=-1;
         spislowdevconf.queue_size=1;    //to be tested
-        spislowdevconf.flags=0;
+        spislowdevconf.flags=SPI_DEVICE_NO_DUMMY;
         spislowdevconf.pre_cb=0;
         spislowdevconf.post_cb=0;
         spi_bus_add_device(spih,&spislowdevconf,&spislowdevhandle);
