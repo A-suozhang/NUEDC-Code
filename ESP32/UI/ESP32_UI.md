@@ -57,3 +57,17 @@ uix.tick();
 * UIButton: 与回调函数绑定,每次被按下相当于调用了回调函数, 内置了按下和不被按下两种状态
 * UIDynamicText: 构造函数传入的字符串改变,经过调用string.invalidate()之后,文本的内容也随之改变
 * UIXSlider: 可以从外部读取percentage
+
+
+## Elements 
+|Color|
+|--|--|
+|COLVSBLUE|
+|COLVSORANGE|
+|COLCYAN|
+|COLORANGE|
+|COLLIGHTGRAY|
+|COLGRAY|
+|COLDARKGRAY|
+|COLBLACK|
+|COLWHITE|
