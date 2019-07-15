@@ -1,6 +1,6 @@
 fs = 312500;     % Sample Rate - 300k
-N = 3000;          % How Many Points To Calc
-N_fft = 2048 ;
+N = 128;          % How Many Points To Calc
+N_fft = 128 ;
 f0 = 100000;          % The Wave Frequency
 f1 = 99009;
 
