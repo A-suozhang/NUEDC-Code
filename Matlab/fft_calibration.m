@@ -1,7 +1,7 @@
 fs = 312500;     % Sample Rate - 300k
 N = 128;          % How Many Points To Calc
 N_fft = 128 ;
-f0 = 10000;          % The Wave Frequency
+f0 = 51000;          % The Wave Frequency
 f1 = 51900;
 % 定标值随频率稍有偏移,但是差距不大,在小数点后3位可以使用
 

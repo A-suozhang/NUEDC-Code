@@ -1,14 +1,15 @@
 fs = 625000;
 N = 2048;
-f0 = 15000;
-Amp0 = 0.1;
-f1 = 15010;
+f0 = 20000;
+Amp0 = 0.3;
+f1 = 21112;
 Amp1 = 0.5;
+phase_shift = 0.4;
 
 xs = 0:1/fs:(1/fs)*(N-1);
 
 % -----------------The C Signal -----------------
-ys0 = Amp0*sin(2*pi*f0*xs) + Amp1*sin(2*pi*f1*xs);  % 注意因为两个相加了，要保证最后的结果量化正确, 所以需要Amp0 + Amp1 < 1,如果违反的话会出问题
+ys0 = Amp0*sin(2*pi*f0*xs + phase_shift*pi) + Amp1*square(2*pi*f1*xs+phase_shift*pi);  % 注意因为两个相加了，要保证最后的结果量化正确, 所以需要Amp0 + Amp1 < 1,如果违反的话会出问题
 y0 =  round(ys0*(2^13))
 y0_bak =  round(ys0*(2^13));
 y0(find(y0<0))=y0(find(y0<0))+2^14;   %负数转补码
@@ -17,7 +18,7 @@ y0(find(y0<0))=y0(find(y0<0))+2^14;   %负数转补码
  y0 = dec2hex(y0);
  
  %--------------- The B Signal -------------------
- ys1 = Amp1*sin(2*pi*f1*xs);
+ ys1 = Amp1*square(2*pi*f1*xs + phase_shift*pi);
 y1 =  round(ys1*(2^13))
 y1_bak =  round(ys1*(2^13));
 y1(find(y1<0))=y1(find(y1<0))+2^14;   %负数转补码
@@ -47,6 +48,8 @@ hold on;
 plot(dy0_fft);
 hold on; 
 plot(dy - dy0_fft);
+
+display('Writing Done');
 
 % stem(y0_fft);
 % hold on;

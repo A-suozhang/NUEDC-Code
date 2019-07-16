@@ -1,25 +1,29 @@
-fs = 312500;     % Sample Rate - 300k
-N = 128;          % How Many Points To Calc
-N_fft = 128 ;
-f0 = 100000;          % The Wave Frequency
-f1 = 99009;
+fs = 625000;     % Sample Rate - 300k
+N = 4096;          % How Many Points To Calc
+N_fft = 4096 ;
+f0 = 10000;          % The Wave Frequency
+f1 = 11000;
 
 phase_shift = 0.9;  % Pretend Using Delay To Create Phase Shit, Ranging from (0,1)
 
 xs = 0:1/fs:N*(1/fs);  
-amp_a = 1.6;
-amp_b = 0.9;
+amp_a = 1;
+amp_b = 1;
 %
 
 y_a = amp_a*sin(2*pi*f0*xs);  % A - 10k Sin Wave 
-y_b = amp_b*sawtooth(2*pi*f1*xs,0.5);  % B -12k Sin Wave
+y_b = amp_b*sin(2*pi*f1*xs);  % B -12k Sin Wave
 y_c = y_a + y_b;    % Signal C
+
+dfft = abs(fft(y_c,N_fft)) - abs(fft(y_b,N_fft)) - abs(fft(y_a,N_fft));
+
+
 
 % --------------------- Ideal Phase Shift -------------------
 
 y_a_r = amp_a*sin(2*pi*f0*xs + phase_shift*pi);  % A - 10k Sin Wave After Phase Shift - Unavailable 
 y_a_r_n = awgn(y_a_r, 10);  % adding noise, will cause Amp(POWER) Wrong
-y_b_r = amp_b*sawtooth(2*pi*f1*xs + phase_shift*pi, 0.5);  % B -12k Sin Wave After Phase Shift - Unavailable
+y_b_r = amp_b*sin(2*pi*f1*xs + phase_shift*pi);  % B -12k Sin Wave After Phase Shift - Unavailable
 y_b_r_n = awgn(y_b_r, 10);
 y_d = y_a_r + y_b_r;    % Signal D
 
@@ -65,25 +69,26 @@ y_d = y_a_r + y_b_r;    % Signal D
 
 fft_b = fft(y_b_r, N_fft);
 fft_d = fft(y_d, N_fft);
+
 fft_a_r = fft_d - fft_b;
 abs_fft_b = abs(fft_b);
 % stem(abs_fft_b);      % Plot Signal A's FFT 
 abs_fft_d = abs(fft_d);
 % plot(xs, y_b,xs,yc_d);
 % stem(fft_b(1:N_fft*0.1));
-abs_fft_a_r = abs(fft_a_r);
+abs_fft_a_r = abs_fft_b - abs_fft_d;
 abs_fft_a_r2 = abs(fft(y_a_r, N_fft));
 dfft = abs_fft_a_r - abs_fft_a_r2;
 % stem(abs_fft_a_r);
 % hold on;
 % stem(abs_fft_a_r2);
-stem(abs_fft_a_r(1:N_fft*0.5).^2);
+stem(abs_fft_a_r(1:N_fft*0.5));
 [M,i] = max(abs_fft_a_r);
-amp = M*N_fft/2;
+% amp = M*N_fft/2;
 % p = sum(abs_fft_a_r.^2);
 p = (abs_fft_a_r(i).^2 + abs_fft_a_r(i+1).^2 + abs_fft_a_r(i-1).^2);
 % new_amp = sqrt(p)/( 1447.776440678686)  % Calibration For FFT
-new_amp = sqrt(p)/(1002.588811172620)  % Calibration For FFT 
+new_amp = sqrt(p)/(1017.664540853342)  % Calibration For FFT 
 %This Variable Concerned with FFT_N!!
 
 % new_amp = sqrt(p)/(Amps(round((f - 10000)/100) + 1))  % Calibration For FFT

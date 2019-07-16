@@ -7,7 +7,10 @@
 |引脚作用|数字|
 |RST_N(SW2)|Y6|
 |Sys_CLK(板上晶振)|Y7|
-|LED|R19|
+|LED0|R19|
+|LED1|T19|
+|LED2|G14|
+|LED1|J15|
 |SW3|W6|
 |SW4|V6|
 |SW5|V10|
