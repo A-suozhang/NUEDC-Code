@@ -25,6 +25,7 @@ reg state;
 
 assign local_data = dout;
 
+// ---------------------  Read Data From Uart_RX
 always@(posedge clk_out1) begin
     if(rst) begin
       state <= 0;
@@ -69,6 +70,7 @@ reg[7:0] processed_data;
 // Here rd_en means input data valid
 // ------------ WR Data Into FIFO
 reg processed_state;
+
 always@(posedge clk_out1) begin
     if (rst) begin
         processed_state <= 0;
