@@ -1,8 +1,8 @@
 {
     "board": "esp32:esp32:esp32",
     "programmer": "ArduinoISP",
-    "sketch": "ESP32\\UI\\ESP32_UIX.ino",
+    "sketch": "ESP32\\Uart_Test\\Uart_Test.ino",
     "port": "COM3",
     "output": "../ArduinoOutput",
-    "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=none"
+    "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200,DebugLevel=none"
 }
