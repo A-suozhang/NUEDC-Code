@@ -1,8 +1,8 @@
 {
     "board": "esp32:esp32:esp32",
     "programmer": "ArduinoISP",
-    "sketch": "ESP32\\Uart_Test\\Uart_Test.ino",
+    "sketch": "ESP32\\Big Screen\\bigscreen.ino",
     "port": "COM3",
     "output": "../ArduinoOutput",
-    "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200,DebugLevel=none"
+    "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200,DebugLevel=warn"
 }

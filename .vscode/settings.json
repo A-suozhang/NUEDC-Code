@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "AD9910V1.C": "cpp"
+        "AD9910V1.C": "cpp",
+        "istream": "c",
+        "cmath": "cpp"
     }
 }
