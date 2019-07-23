@@ -239,7 +239,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   temp_millis2 = millis();
   if (temp_millis2 - lasttime2 > 1000) {
-    lasttime2 = temp_millis2;
+    lasttime2 = temp_millis2;32
     read_temperature_start = 1;
   }
 

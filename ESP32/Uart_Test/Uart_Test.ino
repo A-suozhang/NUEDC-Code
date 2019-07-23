@@ -10,8 +10,6 @@
 # define sclk 18
 
 # define CLOCKSPEED 1000000
-
-
 # define uchar unsigned char
 
 uchar temp;

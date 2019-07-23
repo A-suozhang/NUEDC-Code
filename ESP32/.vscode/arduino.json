@@ -1,8 +1,8 @@
 {
-    "programmer": "AVRISP mkII",
+    "programmer": "ArduinoISP",
     "board": "esp32:esp32:esp32",
-    "configuration": "PSRAM=disabled,PartitionScheme=default,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=115200,DebugLevel=none",
-    "sketch": "ESP32_Test\\esp32_test.ino",
+    "configuration": "PSRAM=disabled,PartitionScheme=default,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=debug",
+    "sketch": "PCF8575\\PCF8574.ino",
     "port": "COM3",
     "output": "build"
 }

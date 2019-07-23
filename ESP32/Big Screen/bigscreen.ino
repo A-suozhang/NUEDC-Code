@@ -182,7 +182,7 @@ void loop(){
             int Data_RX_int;
             float Data_RX_float = 0.0;
 
-            // ------------Decode The Temp Frame ------------      
+            // ------------Decode The Temp Frame (Input)------------      
             if (temp_frame[1] == 0xB1 && temp_frame[2] == 0x11 && temp_frame[7] == 0x11){
                 scene_id = temp_frame[4];
                 element_id = temp_frame[6];
@@ -214,6 +214,8 @@ void loop(){
                     Serial.println(Data_RX_float);
                 }
             }
+            // ------------Decode The Temp Frame (Input)------------   
+            if(temp_frame[1] == 0xB1 && temp_frame[2] == 0x10 && temp_frame)
             
             temp_frame[MAX_LEN] = {0};
             cnt = 0;
