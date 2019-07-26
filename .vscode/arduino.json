@@ -1,8 +1,8 @@
 {
-    "board": "arduino:avr:mega",
+    "board": "esp32:esp32:esp32",
     "programmer": "ArduinoISP",
-    "sketch": "ESP32\\UITEST\\adf4351_FRAC.ino",
-    "port": "COM23",
+    "sketch": "ESP32\\2017H\\2017H.ino",
+    "port": "COM3",
     "output": "../ArduinoOutput",
-    "configuration": "cpu=atmega2560"
+    "configuration": "PSRAM=disabled,PartitionScheme=default,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=debug"
 }
