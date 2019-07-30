@@ -3,6 +3,8 @@
 
 #include "DataStructures.h"
 #include "UIXRenderer.h"
+#include <stdarg.h>
+#include <string.h>
 
 void inputboxclick(char* inputboxtext);
 
@@ -42,7 +44,7 @@ class UIXBackground : public UIXObject{
     unsigned short col;
     void draw(UIXDrawContext* context){
         UIXRenderer::clear(context->dispmem,context->pagestarty,context->pageendy,COLDARKGRAY,context->refreshsp,context->refreshep);
-        UIXRenderer::drawrectangle(context->dispmem,context->pagestarty,context->pageendy,0,239,0,289,COLVSBLUE,context->refreshsp,context->refreshep);
+        UIXRenderer::drawrectangle(context->dispmem,context->pagestarty,context->pageendy,0,239,0,289,COLRED,context->refreshsp,context->refreshep);
         UIXRenderer::drawrectangle(context->dispmem,context->pagestarty,context->pageendy,3,239-3,3,289-3,COLBLACK,context->refreshsp,context->refreshep);
         //UIXRenderer::drawstring(context->dispmem,context->pagestarty,context->pageendy,(unsigned char*)"Test string",11,100,100,0xFFFF,context->refreshsp,context->refreshep,2);
     }
@@ -322,6 +324,105 @@ class UIXSlider : public UIXObject{
         l=l_;r=r_;t=t_;b=b_;
         col=col_;colhighlight=colhighlight_;
         animated=animated_;
+    }
+};
+
+#define UIXCONSOLELINES 21
+bool uixconinvokecallback=false;    //currently, button click callback function does not have a pointer type argument
+void uixconsolebtnsendcallback(int tag,UIXButton* btn){
+    uixconinvokecallback=true;
+}
+class UIXConsole : public UIXObject{
+    private:
+    UIXDynamicText* dtl[UIXCONSOLELINES];
+    char* dtlcont[UIXCONSOLELINES];
+    char* dtlconttmp;
+    int dtlpt=0;
+    UIXInputBox* inpt;
+    char* inputstr;
+    UIXButton* btnsnd;
+    bool invalidated=true;
+    void (*sndcallback)(char* str);
+
+    public:
+    void draw(UIXDrawContext* context){
+        for(int i=0;i<UIXCONSOLELINES;i++){
+            dtl[i]->draw(context);
+            if(context->pageendy>=319)//last page temp fix
+                dtl[i]->redraw=false;
+        }
+        inpt->draw(context);
+        btnsnd->draw(context);
+    }
+    void tick(UIXTouchContext* context){
+        if(uixconinvokecallback){
+            uixconinvokecallback=false;
+            sndcallback(inputstr);
+        }
+        inpt->tick(context);
+        btnsnd->tick(context);
+        if(invalidated){
+            redraw=true;
+            invalidated=false;
+        }else{
+            redraw=false;
+        }
+        if(inpt->redraw||btnsnd->redraw) redraw=true;
+    }
+    void updaterefresharea(int* refreshsp,int* refreshep,int pagestarty,int pageendy){
+        
+        for(int i=0;i<UIXCONSOLELINES;i++){
+            if(dtl[i]->redraw)
+                dtl[i]->updaterefresharea(refreshsp,refreshep,pagestarty,pageendy);
+        }
+        if(inpt->redraw) inpt->updaterefresharea(refreshsp,refreshep,pagestarty,pageendy);
+        if(btnsnd->redraw) btnsnd->updaterefresharea(refreshsp,refreshep,pagestarty,pageendy);
+    }
+    int log(const char* format,...){
+        int dtlptprevprev=dtlpt==0?(UIXCONSOLELINES-2):(dtlpt==1?(UIXCONSOLELINES-1):(dtlpt-2));
+        int dtlptprev=dtlpt==0?(UIXCONSOLELINES-1):(dtlpt-1);
+        int dtlptnext=(dtlpt+1)%UIXCONSOLELINES;
+        va_list vl;
+        va_start(vl,format);
+
+        dtlcont[dtlptprevprev][0]=' ';
+        dtl[dtlptprevprev]->col=COLGRAY;
+        dtl[dtlptprevprev]->invalidate();
+
+        dtlcont[dtlptprev][0]=' ';
+        dtl[dtlptprev]->col=COLLIGHTGRAY;
+        dtl[dtlptprev]->invalidate();
+
+        int ret=vsprintf(dtlconttmp,format,vl);
+        dtlcont[dtlpt][0]='>';
+        dtlcont[dtlpt][1]='\0';
+        dtlcont[dtlpt]=strcat(dtlcont[dtlpt],dtlconttmp);
+        dtl[dtlpt]->col=COLWHITE;
+        dtl[dtlpt]->invalidate();
+
+        dtlcont[dtlptnext][0]=' ';
+        dtlcont[dtlptnext][1]='\0';
+        dtl[dtlptnext]->invalidate();
+
+        va_end(vl);
+        dtlpt=dtlptnext;
+        invalidated=true;
+        return ret;
+    }
+    UIXConsole(void (*sndcallback_)(char* str)){
+        drawn=true;
+        sndcallback=sndcallback_;
+        dtlconttmp=new char[100];
+        inputstr=new char[100];
+        inputstr[0]='\0';
+        for(int i=0;i<UIXCONSOLELINES;i++){
+            dtlcont[i]=new char[100];
+            dtlcont[i][0]=' ';
+            dtlcont[i][1]='\0';
+            dtl[i]=new UIXDynamicText(dtlcont[i],COLWHITE,18,20+10*i,1,0);
+        }
+        inpt=new UIXInputBox(20,150,240,270,COLVSORANGE,COLORANGE,inputstr);
+        btnsnd=new UIXButton(160,220,240,270,COLVSORANGE,COLORANGE,"Send",uixconsolebtnsendcallback);
     }
 };
 

@@ -2,6 +2,13 @@
     "files.associations": {
         "AD9910V1.C": "cpp",
         "istream": "c",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "ostream": "cpp",
+        "initializer_list": "cpp",
+        "list": "cpp",
+        "vector": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp"
     }
 }

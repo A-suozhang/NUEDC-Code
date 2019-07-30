@@ -1,17 +1,14 @@
 
 # define uchar unsigned char
-# define CLOCKSPEED 100000
+# define CLOCKSPEED 1000000
 #include <SPI.h>
-#include "PCF8574.h"
 
-
-PCF8574 IO_Expand0(0x00);   // The ADDR Here Is Of 3 BIT (0x00 ~ 0x07)
 
 class AD9910
 {
     public:
     // ----public entitys----;
-    int _cs ,_update ,_sdio ,_sclk;
+    int _cs ,_rst ,_update ,_sdio ,_sclk;
     SPIClass * _hspi;
     uint8_t cfr1[4] = {0x00, 0x40, 0x00, 0x02};
     uint8_t cfr2[4] = {0x01, 0x00, 0x08, 0x20};
@@ -19,14 +16,14 @@ class AD9910
     uint8_t DAC_config[4] = {0x00,0x00,0x00,0xFF};
     uint8_t profile0[8] = {0x3F, 0x3F, 0x00, 0x00, 0x25, 0x09, 0x7b, 0x42};
     // ----Constructor----
-    AD9910(int cs , int update , int sdio , int sclk, SPIClass* hspi)    
+    AD9910(int cs , int rst , int update , int sdio , int sclk, SPIClass* hspi)    
     // 如果这里传入SPIClass hspi是SPIClass*
     // 那么就传了一个空指针
     // 传一个指针的指针(指针的地址进去)
     // 然后调用的时候(*hspi)->begin()
     {
         _cs  = cs ;
-        // _rst  = rst ;
+        _rst  = rst ;
         _update  = update ;
         _sdio  = sdio ;
         _sclk  = sclk ;
@@ -46,19 +43,16 @@ class AD9910
     // -------------Init IO For AD9910 =============
     void begin()
     {
-        Wire.begin();
-        IO_Expand0.begin();
         // Set IO
-
         pinMode(_cs , OUTPUT);
-        // pinMode(_rst , OUTPUT);
+        pinMode(_rst , OUTPUT);
         pinMode(_update , OUTPUT);
         pinMode(_sdio, OUTPUT);
         pinMode(_sclk, OUTPUT);
 
         // Set HIGH/LOW
         digitalWrite(_cs , HIGH);
-        // digitalWrite(_rst , LOW);
+        digitalWrite(_rst , LOW);
         digitalWrite(_update , LOW);
 
         reset();
@@ -67,9 +61,9 @@ class AD9910
 
     void reset()
     {
-        // digitalWrite(_rst , HIGH);
+        digitalWrite(_rst , HIGH);
         // delay(1);
-        // digitalWrite(_rst , LOW);
+        digitalWrite(_rst , LOW);
     }
 
     void update()

@@ -1,8 +1,8 @@
 {
     "board": "esp32:esp32:esp32",
     "programmer": "ArduinoISP",
-    "sketch": "ESP32\\2017H\\2017H.ino",
+    "sketch": "ESP32\\2017H-B\\2017H-B.ino",
     "port": "COM3",
     "output": "../ArduinoOutput",
-    "configuration": "PSRAM=disabled,PartitionScheme=default,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=debug"
+    "configuration": "PSRAM=disabled,PartitionScheme=default,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=info"
 }

@@ -1,0 +1,319 @@
+#include <Arduino.h>
+#include <HardwareSerial.h>
+#include "src/UIX/UIX.h"
+#include "src/AD9910_with_IO_Expand.h"
+#include <String.h>
+#include <SPI.h>
+#include <WiFi.h>
+#include <driver/adc.h>
+#include <driver/dac.h>
+#include <esp_log.h>
+
+static const char* TAG = "My_ESP32";
+
+// Set Up The WIFI_ROUTER(AP)  Info
+// const char* ssid     = "F534";
+// const char* password = "nuedc2019";
+const char* ssid     = "awsl";
+const char* password = "1qaz2wsx";
+
+WiFiServer server(100);
+HardwareSerial Serial0(1);
+
+// -------- A Few Define ------------
+# define cs 15
+# define rst 2
+# define update 12                                     
+# define sdio 13
+# define sclk 14
+
+# define adc_pin 36
+
+# define dac0_pin 25
+# define dac1_pin 26
+
+# define uart_tx_pin 1
+# define uart_rx_pin 3
+
+# define CLOCKSPEED 1000000
+# define uchar unsigned char
+
+
+
+// ------ Setting Up A Few Elements -------------
+SPIClass * hspi = NULL;
+AD9910_with_IO_Expand * DDS = NULL;
+UIX uix;
+
+double freq = 1000000.0;    // real_freq*100
+double amp = 500.0;
+
+//button click callbacks
+void btnsendclick0(int tag,UIXButton* obj);
+void btnsendclick1(int tag,UIXButton* obj);
+void btnsendclick2(int tag,UIXButton* obj);
+
+char sendstr_freq[100]="";
+char sendstr_amp[100]="";
+char str_freq[100]="Frequency";
+char str_amp[100]="Amplitude";
+
+bool esp32_data_ready_flag = false;
+
+unsigned long last_time;
+unsigned long last_time1;
+unsigned long last_time2;
+
+
+UIXInputBox inptsend0(20,120,20,50,COLVSBLUE,COLCYAN,sendstr_freq);   //input box
+UIXInputBox inptsend1(20,120,60,90,COLVSBLUE,COLCYAN,sendstr_amp);   //input box
+
+UIXButton btnsend0(20,120,100,130,COLVSBLUE,COLCYAN,"Sweep",btnsendclick0);
+UIXButton btnsend1(130,190,20,50,COLVSBLUE,COLCYAN,"Set Freq",btnsendclick1);
+UIXButton btnsend2(130,190,60,90,COLVSBLUE,COLCYAN,"Set Amp",btnsendclick2);
+
+uint16_t val;
+uint16_t data_buffer[40];
+
+uint8_t adc_read(){
+    unsigned long adc_sum = 0;
+    uint8_t adc_result = 0;
+    uint8_t adc_temp = 0;
+    for (int i = 0; i<100;i++){
+        adc_temp = adc1_get_raw(ADC1_CHANNEL_6);
+        adc_sum = adc_sum + adc_temp;
+    }
+    adc_result = adc_sum/100;
+    return adc_result;
+}
+
+
+//called when btnsend is clicked
+void btnsendclick0(int tag,UIXButton* obj){
+    esp32_data_ready_flag = 0;
+    Serial.println("Sweep!");
+    for (int i=0;i<40;i++){
+        DDS->set_freq(1000000*(i+1));
+        // ADC Read
+        delay(5);
+        val = adc_read();
+        ESP_LOGI(TAG, "At %d Iter, Getting The ADC VALUE %u",i,(uint8_t)(val >>4));
+        // Fill data_buffer
+        data_buffer[i] = val;
+        // DAC Write
+        // TODO: ------------ ADD CALIBRATION AND TRANSFORM HERE --------------
+        // TODO: If Data Valid Keeps ON Sending Data
+        // dac_output_voltage(DAC_CHANNEL_1,(uint8_t)(i*6));
+        // dac_output_voltage(DAC_CHANNEL_2,(uint8_t)(val >> 4));
+        
+    }
+    esp32_data_ready_flag = true;
+}
+
+
+// The Call Back For Freq Set
+void btnsendclick1(int tag,UIXButton* obj){
+    esp32_data_ready_flag = 0;
+    Serial.print("Get Freq:");
+    DDS->set_freq(atof(sendstr_freq));
+    Serial.println(float(atoi(sendstr_freq)));
+    delay(5);   // Wait A while
+    val = adc_read();         // 36 is The ADC CH
+    ESP_LOGI(TAG, "Getting The ADC VALUE %u", (uint8_t)(val >>4));
+}
+
+void btnsendclick2(int tag,UIXButton* obj){
+    esp32_data_ready_flag = 0;
+    Serial.print("Get Amp:");
+    DDS->set_Amp(atof(sendstr_amp));
+    Serial.println(sendstr_amp);
+    delay(5);   // Wait A while
+    val = adc_read();
+    ESP_LOGI(TAG, "Getting The ADC VALUE %u", (uint8_t)(val >>4));
+
+}
+
+void setup(){
+
+    // Set Up Serial
+    Serial.begin(115200);
+   //  Serial0.begin(115200,SERIAL_8N1,3,1);
+    ESP_LOGI(TAG, "Serial Initialized");
+
+    // Set Up ADDA
+    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_6);  // 6dB: Dynamic Range 2.2V
+    // adc1_get_raw(ADC1_CHANNEL_6);
+    dac_output_enable(DAC_CHANNEL_1);   // 25
+    dac_output_enable(DAC_CHANNEL_2);   // 26
+    // dac_output_voltage(DAC_CHANNEL_1, 200);
+    ESP_LOGI(TAG, "ADDA Initialized");
+    
+
+    // Set Up The SPI
+    hspi = new SPIClass(HSPI);
+    if(hspi==NULL)
+        Serial.print("SPI INITIALIZATION FAILED.");
+    hspi->begin();
+    //SCLK = 14, MISO = 12, MOSI = 13, SS = 15
+    DDS = new AD9910_with_IO_Expand(update,sdio,sclk,hspi);
+    DDS->begin();
+    // Initial_Value
+    DDS->set_Amp(500.0);
+    DDS->set_freq(1000000.0);
+    ESP_LOGI(TAG, "DDS Initialized");
+
+    // // Set Up The WIFi server
+    // Serial.print("Connecting to ");
+    // Serial.println(ssid);
+    // WiFi.begin(ssid,password);
+    // while (WiFi.status() != WL_CONNECTED) {
+    //     delay(500);
+    //     Serial.print(".");
+    // }
+    // // Print local IP address and start web server
+    // Serial.println("");
+    // Serial.println("WiFi connected."); 
+    // Serial.println("IP address: ");
+    // Serial.println(WiFi.localIP());
+    // server.begin();
+
+    // Set Up The UI
+    uixuserpanelnum=1;  //no more than 46
+    uixpanels[0].label="SerialTest";
+    //add objects to panel 0
+    uixpanels[0].uixobjects+=inptsend0;
+    uixpanels[0].uixobjects+=inptsend1;
+    uixpanels[0].uixobjects+=btnsend0;
+    uixpanels[0].uixobjects+=btnsend1;
+    uixpanels[0].uixobjects+=btnsend2;
+    uix.begin();
+}
+
+void loop(){
+
+    // * ------------------ Dynamically Update The UIX ----------------------
+    uix.tick();
+
+    // * ------------------ DAC OUTPUT DATA ------------------------------
+    if (esp32_data_ready_flag){
+        for (int i = 0;i<40;i++){
+            dac_output_voltage(DAC_CHANNEL_1,(uint8_t)(i*6));
+            dac_output_voltage(DAC_CHANNEL_2,(uint8_t)(val >> 4));
+            // ESP_LOGI(TAG, "Writing Through DAC The %d 's Iter", i);
+            delay(1);   // TODO: Delay How Much?
+        }
+    }
+
+    // * -------------------- The WIFI Part ------------------------------
+    // unsigned long temp_millis = millis();
+    // if (temp_millis - last_time > 2000){
+    //     last_time = temp_millis;
+    //     Serial.println("Waiting For Client");
+    // }
+
+    // bool sending_data = false;
+    // WiFiClient client = server.available();   // Listen for incoming clients
+    // if (client) {                             
+    //     Serial.println("New Client.");          // print a message out in the serial port
+    //     if (esp32_data_ready_flag){     // Only If The Data Is Ready
+    //         while(client.connected()){
+    //             // --------------- Check If Client Is Alive ------------------
+    //             unsigned long temp_millis1 = millis();
+    //             if (temp_millis1 - last_time1 > 5000){
+
+    //                 last_time1 = temp_millis1;
+    //                 if (!sending_data){
+    //                     client.write(0xFF);
+    //                 }
+    //                 delay(500);
+
+    //                 if (client.available()){
+    //                     char c = client.read();
+    //                     // Serial.print("Received From Client:");
+    //                     Serial.print(c);
+    //                     if (c != 0x00){
+    //                         Serial.print(c);
+    //                         client.stop();
+    //                         Serial.println("Detected Dead Client");
+    //                     }
+    //                     else{
+    //                         Serial.println("The Client Is Alive");
+    //                     }
+
+    //                 }
+    //                 else{
+    //                     client.stop();
+    //                     Serial.println("No Data Back, Detected Dead Client");
+    //                 }
+    //             }
+    //             // ---------------------------------------------------------------
+
+    //             if (Serial.available()){
+    //                 char c = Serial.read();
+    //                 client.write(c);
+    //             }
+
+    //             if (client.available()){
+    //                 char c = client.read();
+    //                 Serial.print(c);
+    //                 // TODO: Fill The TCP Communication Design
+    //                 if (c == '!'){
+    //                     sending_data = true;
+    //                     // Send Out The Data
+    //                     client.write((uint8_t)0x00);
+    //                     for (uint8_t i = 0;i<15;i++){
+    //                         client.write(i);
+    //                     }
+    //                     sending_data = false;
+    //                 }
+    //             }
+
+
+                
+    //         }
+    //     }
+
+
+
+        // ---------- Send Data To Client Test ----------------
+        // while (client.connected()) {    // (client.connected() stays true, when there are unread data, even if the client has disconnected)
+        // if (client.available()) {             // if there's bytes to read to the client,
+        //     // Read Client's Respond
+        //     char c = client.read();  
+        //     client.write(c);
+        //     Serial.write(c);   
+        //     }                 // print it out the serial monitor
+        // }
+
+
+
+
+    // After The client disconnected
+    // client.stop();
+    // Serial.println("Client disconnected.");
+    // Serial.println("");
+    // }
+
+    // * ------------------- The UART PART ---------------------------
+    if (esp32_data_ready_flag){
+        Serial.write(0x00); // Send 2 0x00 To Denote The Start Of A Frame
+        Serial.write(0x00);
+        for (int i = 0;i<40;i++){
+            if (data_buffer[i] == 0x00){
+                Serial.write(0x01);
+            }
+            else if (data_buffer[i] == 0xFF){
+                Serial.write(0xFE);
+            }
+            else {
+                Serial.write(data_buffer[i]);
+            } 
+        }
+        ESP_LOGI(TAG, "Finished Transmitting A Packet Through UART");
+    }
+
+
+
+}
+
