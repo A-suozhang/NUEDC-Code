@@ -9,16 +9,19 @@ using namespace std;
 
 
 ifstream f;
+ofstream fo;
 
 int main(){
 
     // * -------- Read Data In From File -------------------
     f.open("C:/Users/A_suozhang/Code/EE/Verilog/2011E/out.txt");
+    fo.open("./output.txt");
     char data_in[NUM_DATA] = {0};
     int i = 0;
     if (f.is_open()){
         while ((!f.eof()) && (i<NUM_DATA)){
             f >> data_in[i];
+            fo << data_in[i] << " ";
             i++;
             // cout << i << endl;
         }
@@ -28,26 +31,32 @@ int main(){
     // * ------- Creating Data Edge -----------
     char data_in_edge[NUM_DATA] = {0};
     for (int i=1; i< NUM_DATA;i++){
+
         if (data_in[i-1] == 0 && data_in[i] == 1){
             data_in_edge[i] = 1;
         }
         else{
             data_in_edge[i] = 0;
         }
+        fo << data_in_edge[i] << " ";
     }
 
     // * ------- Create PLL CLK EDGE---------------------
+    long pll_clk_incr;
     char pll_clk_edge[NUM_DATA] = {0};
     for (int i = 0; i< NUM_DATA; i++){
-        if (i%(SYS_CLK/(PLL_CLK*2) == 0)){
+        if (i%(SYS_CLK/((PLL_CLK+pll_clk_incr)*2) == 0)){
             pll_clk_edge[i] = 1;
         }
         else {
             pll_clk_edge[i] = 0;
         }
+        fo << pll_clk_edge << " ";
     }
 
-    
+    // * --------- Apply Lock --------------
+
+
 
 
 
