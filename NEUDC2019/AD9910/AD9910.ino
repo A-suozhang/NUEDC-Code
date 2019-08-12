@@ -1,4 +1,4 @@
-# include "AD9910.h"
+# include "src/AD9910.h"
 # include <SPI.h>
 
 # define cs 5
@@ -23,18 +23,18 @@ void setup()
     SPI.begin();
     // DDS
     DDS.begin();
-    DDS.set_freq(100000.0,0);
+    DDS.set_freq(4850000.0,0);
+    
     // DDS.set_Amp(500);
 }
 
 void loop(){
     // LIt The Light To Denote Code IN Effect
-    // digitalWrite(25, HIGH);
-    digitalWrite(26, HIGH);
-    delay(100);
-    digitalWrite(26,LOW);
-    delay(100);
-
+    
+    // digitalWrite(26, HIGH);
+    // delay(100);
+    // digitalWrite(26,LOW);
+    // delay(100);
     // Serial.println("Working..");
 
     /* 
@@ -65,8 +65,6 @@ void loop(){
 //    }
    
 
-DDS.set_freq(freq);
-//  DDS.set_Amp(amp);
 
 
 

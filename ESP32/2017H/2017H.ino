@@ -26,7 +26,7 @@ HardwareSerial Serial0(1);
 # define sdio 13
 # define sclk 14
 
-# define adc_pin 36
+# define adc_pin 34
 
 # define dac0_pin 25
 # define dac1_pin 26

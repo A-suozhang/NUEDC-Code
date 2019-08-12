@@ -1,8 +1,8 @@
 {
     "board": "esp32:esp32:esp32",
     "programmer": "ArduinoISP",
-    "sketch": "ESP32\\Big Screen\\bigscreen.ino",
-    "port": "COM24",
+    "sketch": "NEUDC2019\\Commu.ino",
+    "port": "COM3",
     "output": "../ArduinoOutput",
     "configuration": "PSRAM=disabled,PartitionScheme=default,FlashMode=qio,FlashFreq=80,FlashSize=4M,UploadSpeed=921600,DebugLevel=verbose"
 }

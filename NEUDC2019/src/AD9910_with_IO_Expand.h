@@ -1,29 +1,39 @@
 
 # define uchar unsigned char
 # define CLOCKSPEED 1000000
+#include <SPI.h>
+#include "PCF8574.h"
 
+PCF8574 IO_Expand0(0x00);
 
-# include <SPI.h>
-
-
-class AD9910
+class AD9910_with_IO_Expand
 {
     public:
     // ----public entitys----;
-    int _cs ,_rst ,_update ,_sdio ,_sclk;
+    // int _cs ,_rst ,_update ,_sdio ,_sclk;
+    int _cs, _update,_sdio ,_sclk;
+    SPIClass * _hspi;
     uint8_t cfr1[4] = {0x00, 0x40, 0x00, 0x02};
-    uint8_t cfr2[4] = {0x01, 0x40, 0x08, 0xFC};
-    uint8_t cfr3[4] = {0x05, 0x08, 0x41, 0x14};
+    uint8_t cfr2[4] = {0x01, 0x00, 0x08, 0x20};
+    uint8_t cfr3[4] = {0x05, 0x08, 0x41, 0x32};
     uint8_t DAC_config[4] = {0x00,0x00,0x00,0xFF};
     uint8_t profile0[8] = {0x3F, 0x3F, 0x00, 0x00, 0x25, 0x09, 0x7b, 0x42};
     // ----Constructor----
-    AD9910(int cs , int rst , int update , int sdio , int sclk )
+    // * AD9910(int cs , int rst , int update , int sdio , int sclk, SPIClass* hspi)    
+    AD9910_with_IO_Expand(int update, int sdio , int sclk, SPIClass* hspi)    
+    // 如果这里传入SPIClass hspi是SPIClass*
+    // 那么就传了一个空指针
+    // 传一个指针的指针(指针的地址进去)
+    // 然后调用的时候(*hspi)->begin()
     {
-        _cs  = cs ;
-        _rst  = rst ;
+        // _cs  = cs ;
+        // _rst  = rst ;
+        // _update  = update ;
         _update  = update ;
         _sdio  = sdio ;
         _sclk  = sclk ;
+        _hspi = hspi;
+        
         // _pwr  = pwr ;    LOW
         // _drctl = drctl;  LOW
         // _drhold = drhold;    LOW
@@ -38,16 +48,26 @@ class AD9910
     // -------------Init IO For AD9910 =============
     void begin()
     {
+        // Start PCF8574
+        Wire.begin();
+        IO_Expand0.begin();
+        // * CS is IO_Expand0(0)
+        // * RST is IO_Expand0(1)
+        // * UPDATE is IO_Expand0(2)
+                
         // Set IO
-        pinMode(_cs , OUTPUT);
-        pinMode(_rst , OUTPUT);
+        // pinMode(_cs , OUTPUT);
+        // pinMode(_rst , OUTPUT);
         pinMode(_update , OUTPUT);
-        // pinMode(_sdio, OUTPUT);
-        // pinMode(_sclk, OUTPUT);
+        pinMode(_sdio, OUTPUT);
+        pinMode(_sclk, OUTPUT);
 
         // Set HIGH/LOW
-        digitalWrite(_cs , HIGH);
-        digitalWrite(_rst , LOW);
+        // IO_Expand0.digitalWrite(0,HIGH);
+        // IO_Expand0.digitalWrite(1,LOW);
+        // IO_Expand0.digitalWrite(2,LOW);
+        // digitalWrite(_cs , HIGH);
+        // digitalWrite(_rst , LOW);
         digitalWrite(_update , LOW);
 
         reset();
@@ -56,9 +76,12 @@ class AD9910
 
     void reset()
     {
-        digitalWrite(_rst , HIGH);
-        delay(1);
-        digitalWrite(_rst , LOW);
+        // digitalWrite(_rst , HIGH);
+        // delay(1);
+        // digitalWrite(_rst , LOW);
+
+        IO_Expand0.digitalWrite(1,HIGH);
+        IO_Expand0.digitalWrite(1,LOW);
     }
 
     void update()
@@ -66,23 +89,31 @@ class AD9910
         digitalWrite(_update , HIGH);
         // delay(1);  在Loop中会调用,实际测试发现不用delay
         digitalWrite(_update ,LOW);
+
+        // IO_Expand0.digitalWrite(1,HIGH);
+        // IO_Expand0.digitalWrite(1,LOW);
+
     }
 
     void SPI_Write_Reg(uint8_t addr, uint8_t bytes[], uint8_t num_bytes)
     {
-        SPI.beginTransaction(SPISettings(CLOCKSPEED, MSBFIRST, SPI_MODE0)); // 开始SPI传输,其中CLOCKSPEED是SCLK传输,选用MODE0(经测试除了MODE1之外其他MODE都能操作)
-        digitalWrite(_cs , LOW);    // 手动拉低CS
-        SPI.transfer(addr);
+
+        (_hspi)->beginTransaction(SPISettings(CLOCKSPEED, MSBFIRST, SPI_MODE0)); // 开始SPI传输,其中CLOCKSPEED是SCLK传输,选用MODE0(经测试除了MODE1之外其他MODE都能操作)
+        // digitalWrite(_cs , LOW);    // 手动拉低CS
+        IO_Expand0.digitalWrite(0,LOW);
+        (_hspi)->transfer(addr);
         // delay(1);
         for (int i = 0; i < num_bytes; i++){
-            SPI.transfer(bytes[i]);
+            (_hspi)->transfer(bytes[i]);
+            // (_hspi)->transfer(0x0A);         For Test ONLY!
         }
-        digitalWrite(_cs , HIGH);
-        SPI.endTransaction();
+        // digitalWrite(_cs , HIGH);
+        IO_Expand0.digitalWrite(0,HIGH);
+        (_hspi)->endTransaction();
     }
     void initialize()
-    {
-        // Write Control Word Into Reg 
+    {                                       
+        // Write Control Word Into Regfr
         SPI_Write_Reg(0x00,cfr1,4);
         delay(1);
         SPI_Write_Reg(0x01,cfr2,4);
